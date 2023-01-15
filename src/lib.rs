@@ -77,8 +77,20 @@ impl BrainfuckIo for InMemoryIO {
     }
 }
 
+pub struct StdIO{}
+impl BrainfuckIo for StdIO {
+    fn output_char(&mut self, c: &char) {
+        let c = *c;
+        print!("{c}")
+    }
+
+    fn next_input(&mut self) -> char {
+        todo!()
+    }
+}
+
 pub fn run_program(program:&str, io:&mut impl BrainfuckIo) {
-    let mut memory = [0u8;256];
+    let mut memory = [0u8;256]; // hardcoded 256 cells
     let mut cell_id:usize = 0;
     let mut ip = 0usize;
     let brackets_mapping = parse_brackets(&program).unwrap();
