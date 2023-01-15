@@ -8,8 +8,6 @@
 // , Input a character and store its ASCII value in the current cell
 // [ If the value of the cell is zero, jump to the corresponding ] character
 // ] if the value of the current cell is non-zero, jump back to the corresponding [
-
-
 use std::collections::HashMap;
 
 enum Instruction{
@@ -49,13 +47,13 @@ fn parse_brackets(program:&str) -> Option<HashMap<usize, usize>> {
     Some(brackets_mapping)
 }
 
-trait BrainfuckIo {
+pub trait BrainfuckIo {
     fn output_char(&mut self, c:&char);
     fn next_input(&mut self) -> char;
 }
 
 #[derive(Debug)]
-struct InMemoryIO {
+pub struct InMemoryIO {
     output:Vec<char>,
     inputs:Vec<char>,
 }
@@ -79,7 +77,7 @@ impl BrainfuckIo for InMemoryIO {
     }
 }
 
-fn run_program(program:&str, io:&mut impl BrainfuckIo) {
+pub fn run_program(program:&str, io:&mut impl BrainfuckIo) {
     let mut memory = [0u8;256];
     let mut cell_id:usize = 0;
     let mut ip = 0usize;
@@ -132,11 +130,4 @@ fn run_program(program:&str, io:&mut impl BrainfuckIo) {
             break
         }
     }
-}
-
-fn main() {
-    let sample = "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++."; // prints "Z"
-    let mut io = InMemoryIO::default();
-    run_program(&sample, &mut io);
-    println!("{:?}", io);
 }
