@@ -10,7 +10,7 @@
 // ] if the value of the current cell is non-zero, jump back to the corresponding [
 use std::collections::HashMap;
 
-enum Instruction{
+enum Instruction {
     IncrValue,
     DecrValue,
     IncrPointer,
@@ -21,14 +21,14 @@ enum Instruction{
     JNZ,
 }
 
-fn parse_brackets(program:&str) -> Option<HashMap<usize, usize>> {
-    let mut brackets_mapping:HashMap<usize, usize> = HashMap::new();
-    let mut par_stack:Vec<(char, usize)> = Vec::new();
+fn parse_brackets(program: &str) -> Option<HashMap<usize, usize>> {
+    let mut brackets_mapping: HashMap<usize, usize> = HashMap::new();
+    let mut par_stack: Vec<(char, usize)> = Vec::new();
     for (pos, c) in program.chars().enumerate() {
         match c {
             '[' => {
                 par_stack.push(('[' as char, pos));
-            },
+            }
             ']' => {
                 match par_stack.pop() {
                     Some(matching_open) => {
@@ -37,10 +37,10 @@ fn parse_brackets(program:&str) -> Option<HashMap<usize, usize>> {
                         brackets_mapping.insert(opening_pos, closing_pos);
                         brackets_mapping.insert(closing_pos, opening_pos);
                         // brackets_mapping[*pos] = opening_pos;
-                    },
-                    None => return None
+                    }
+                    None => return None,
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -48,21 +48,21 @@ fn parse_brackets(program:&str) -> Option<HashMap<usize, usize>> {
 }
 
 pub trait BrainfuckIo {
-    fn output_char(&mut self, c:&char);
+    fn output_char(&mut self, c: &char);
     fn next_input(&mut self) -> char;
 }
 
 #[derive(Debug)]
 pub struct InMemoryIO {
-    output:Vec<char>,
-    inputs:Vec<char>,
+    output: Vec<char>,
+    inputs: Vec<char>,
 }
 
-impl Default for InMemoryIO{
+impl Default for InMemoryIO {
     fn default() -> Self {
-        InMemoryIO{
-            output:Vec::new(),
-            inputs:Vec::new(),
+        InMemoryIO {
+            output: Vec::new(),
+            inputs: Vec::new(),
         }
     }
 }
@@ -77,7 +77,7 @@ impl BrainfuckIo for InMemoryIO {
     }
 }
 
-pub struct StdIO{}
+pub struct StdIO {}
 impl BrainfuckIo for StdIO {
     fn output_char(&mut self, c: &char) {
         let c = *c;
@@ -89,9 +89,9 @@ impl BrainfuckIo for StdIO {
     }
 }
 
-pub fn run_program(program:&str, io:&mut impl BrainfuckIo) {
-    let mut memory = [0u8;256]; // hardcoded 256 cells
-    let mut cell_id:usize = 0;
+pub fn run_program(program: &str, io: &mut impl BrainfuckIo) {
+    let mut memory = [0u8; 256]; // hardcoded 256 cells
+    let mut cell_id: usize = 0;
     let mut ip = 0usize;
     let brackets_mapping = parse_brackets(&program).unwrap();
     loop {
@@ -100,46 +100,47 @@ pub fn run_program(program:&str, io:&mut impl BrainfuckIo) {
                 Some('+') => {
                     // + Increment the value of the cell by 1
                     memory[cell_id] += 1;
-                },
+                }
                 Some('-') => {
                     // - Decrement the value of the cell by 1
                     memory[cell_id] -= 1;
-                },
+                }
                 Some('>') => {
                     // > Move the pointer to the next cell to the right
                     cell_id += 1;
-                },
+                }
                 Some('<') => {
                     // < Move the pointer to the next cell to the left
                     cell_id -= 1;
-                },
+                }
                 Some('.') => {
                     // . Output the ASCII character corresponding to the value of the current cell
-                    let v:char = memory[cell_id] as char;
+                    let v: char = memory[cell_id] as char;
                     io.output_char(&v);
-                },
+                }
                 Some(',') => {
                     // , Input a character and store its ASCII value in the current cell
-                    unimplemented!(", Input a character and store its ASCII value in the current cell");
+                    unimplemented!(
+                        ", Input a character and store its ASCII value in the current cell"
+                    );
                 }
                 Some('[') => {
                     // [ If the value of the cell is zero, jump to the corresponding ] character
-                    if memory[cell_id] == 0{
-                        ip = *brackets_mapping.get(&ip).unwrap();
-                    }
-                },
-                Some(']') => {
-                    // ] if the value of the current cell is non-zero, jump back to the corresponding [
-                    if memory[cell_id] != 0{
+                    if memory[cell_id] == 0 {
                         ip = *brackets_mapping.get(&ip).unwrap();
                     }
                 }
-                _ => panic!("Should not happen")
+                Some(']') => {
+                    // ] if the value of the current cell is non-zero, jump back to the corresponding [
+                    if memory[cell_id] != 0 {
+                        ip = *brackets_mapping.get(&ip).unwrap();
+                    }
+                }
+                _ => panic!("Should not happen"),
             }
             ip += 1;
-        }
-        else {
-            break
+        } else {
+            break;
         }
     }
 }
@@ -159,7 +160,6 @@ mod tests {
 
     #[test]
     fn test_z_with_loop() {
-
         // prints "Z" with a loop
         let sample = "+++++++++[>++++++++++<-]>.";
         let mut io = InMemoryIO::default();
