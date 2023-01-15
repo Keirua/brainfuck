@@ -131,3 +131,27 @@ pub fn run_program(program:&str, io:&mut impl BrainfuckIo) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_z_simple() {
+        // prints "Z" by incrementing 90 times
+        let sample = "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.";
+        let mut io = InMemoryIO::default();
+        run_program(&sample, &mut io);
+        assert_eq!(io.output, vec!['Z']);
+    }
+
+    #[test]
+    fn test_z_with_loop() {
+
+        // prints "Z" with a loop
+        let sample = "+++++++++[>++++++++++<-]>.";
+        let mut io = InMemoryIO::default();
+        run_program(&sample, &mut io);
+        assert_eq!(io.output, vec!['Z']);
+    }
+}
