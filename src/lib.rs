@@ -10,15 +10,15 @@
 // ] if the value of the current cell is non-zero, jump back to the corresponding [
 use std::collections::HashMap;
 
-enum Instruction {
+enum BrainfuckInstruction {
     IncrValue,
     DecrValue,
     IncrPointer,
     DecrPointer,
     OutputChar,
     InputChar,
-    JZ,
-    JNZ,
+    JzFront,
+    JnzBack,
 }
 
 fn parse_brackets(program: &str) -> Option<HashMap<usize, usize>> {
@@ -27,7 +27,7 @@ fn parse_brackets(program: &str) -> Option<HashMap<usize, usize>> {
     for (pos, c) in program.chars().enumerate() {
         match c {
             '[' => {
-                par_stack.push(('[' as char, pos));
+                par_stack.push(('[', pos));
             }
             ']' => {
                 match par_stack.pop() {
@@ -52,19 +52,10 @@ pub trait BrainfuckIo {
     fn next_input(&mut self) -> char;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct InMemoryIO {
     output: Vec<char>,
-    inputs: Vec<char>,
-}
-
-impl Default for InMemoryIO {
-    fn default() -> Self {
-        InMemoryIO {
-            output: Vec::new(),
-            inputs: Vec::new(),
-        }
-    }
+    _inputs: Vec<char>,
 }
 
 impl BrainfuckIo for InMemoryIO {
