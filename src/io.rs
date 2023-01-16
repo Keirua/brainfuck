@@ -6,7 +6,16 @@ pub trait BrainfuckIo {
 #[derive(Debug, Default)]
 pub struct InMemoryIO {
     pub output: Vec<char>,
-    _inputs: Vec<char>,
+    inputs: Vec<char>,
+}
+
+impl InMemoryIO {
+    pub fn new_with_inputs(inputs: Vec<char>) -> InMemoryIO{
+        InMemoryIO{
+            output: Vec::new(),
+            inputs
+        }
+    }
 }
 
 impl BrainfuckIo for InMemoryIO {

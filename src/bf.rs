@@ -63,7 +63,7 @@ pub struct BrainfuckVM {
 impl BrainfuckVM {
     pub fn new() -> BrainfuckVM{
         BrainfuckVM {
-            memory: [0; 1024].into(),
+            memory: [0; 30_000].into(),
             cell_id: 0usize,
             ip: 0usize
         }
@@ -188,9 +188,20 @@ mod tests {
         it_does_not_crash_with(sample);
     }
 
-    // #[test]
-    // fn test_sierpinski() {
-    //     let sample = include_str!("../samples/sierpinski.bf");
-    //     it_does_not_crash_with(sample);
-    // }
+    #[test]
+    fn test_has_enough_memory(){
+        // The VM should have at least 30k cells
+        let sample = "++++[>++++++<-]>[>+++++>+++++++<<-]>>++++<[[>[[>>+<<-]<]>>>-]>-[>+>+<<-]>]+++++[>+++++++<<++>-]>.<<.";
+        let mut io = InMemoryIO::default();
+        let mut bf = BrainfuckInterpreter::new(&sample);
+        bf.run(&mut io);
+        assert_eq!(io.output, vec!['#', '\n']);
+    }
+
+    #[ignore]
+    #[test]
+    fn test_sierpinski() {
+        let sample = include_str!("../samples/sierpinski.bf");
+        it_does_not_crash_with(sample);
+    }
 }
