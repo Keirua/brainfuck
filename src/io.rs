@@ -24,7 +24,9 @@ impl BrainfuckIo for InMemoryIO {
     }
 
     fn next_input(&mut self) -> char {
-        todo!()
+        self.inputs.rotate_right(1);
+        // requires the caller to have enough inputs
+        self.inputs.pop().unwrap()
     }
 }
 

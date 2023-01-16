@@ -114,9 +114,8 @@ impl BrainfuckInterpreter {
                     }
                     BrainfuckInstruction::InputChar => {
                         // , Input a character and store its ASCII value in the current cell
-                        unimplemented!(
-                            ", Input a character and store its ASCII value in the current cell"
-                        );
+                        let value = io.next_input();
+                        self.vm.memory[self.vm.cell_id] = value as u8;
                     }
                     BrainfuckInstruction::JzFront => {
                         // [ If the value of the cell is zero, jump to the corresponding ] character
@@ -141,7 +140,6 @@ impl BrainfuckInterpreter {
 
 #[cfg(test)]
 mod tests {
-    extern crate anyhow;
     use super::*;
     use crate::io::InMemoryIO;
     use std::panic;
@@ -196,6 +194,18 @@ mod tests {
         let mut bf = BrainfuckInterpreter::new(&sample);
         bf.run(&mut io);
         assert_eq!(io.output, vec!['#', '\n']);
+    }
+
+    #[test]
+    fn test_decrease(){
+
+        let sample = ",[-]";
+        let res = panic::catch_unwind(|| {
+            let mut io = InMemoryIO::new_with_inputs(vec![4.into()]);
+            let mut bf = BrainfuckInterpreter::new(&sample);
+            bf.run(&mut io);
+        });
+        assert!(res.is_ok());
     }
 
     #[ignore]
