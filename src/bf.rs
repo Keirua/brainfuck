@@ -35,29 +35,43 @@ fn parse_brackets(program: &[BrainfuckInstruction]) -> Option<HashMap<usize, usi
 }
 
 fn parse(program: &str) -> Vec<BrainfuckInstruction> {
-    let mut out: Vec<BrainfuckInstruction> = Vec::new();
+    let mut instructions: Vec<BrainfuckInstruction> = Vec::new();
     for c in program.chars() {
         match c {
-            '+' => out.push(BrainfuckInstruction::IncrValue),
-            '-' => out.push(BrainfuckInstruction::DecrValue),
-            '>' => out.push(BrainfuckInstruction::IncrPointer),
-            '<' => out.push(BrainfuckInstruction::DecrPointer),
-            '[' => out.push(BrainfuckInstruction::JzFront),
-            ']' => out.push(BrainfuckInstruction::JnzBack),
-            '.' => out.push(BrainfuckInstruction::OutputChar),
-            ',' => out.push(BrainfuckInstruction::InputChar),
+            '+' => instructions.push(BrainfuckInstruction::IncrValue),
+            '-' => instructions.push(BrainfuckInstruction::DecrValue),
+            '>' => instructions.push(BrainfuckInstruction::IncrPointer),
+            '<' => instructions.push(BrainfuckInstruction::DecrPointer),
+            '[' => instructions.push(BrainfuckInstruction::JzFront),
+            ']' => instructions.push(BrainfuckInstruction::JnzBack),
+            '.' => instructions.push(BrainfuckInstruction::OutputChar),
+            ',' => instructions.push(BrainfuckInstruction::InputChar),
             _ => {
                 // ignore everything else
             }
         }
     }
-    out
+    instructions
 }
 
-pub struct BrainfuckInterpreter {
+pub struct BrainfuckVM {
     memory: Vec<u8>, // hardcoded 256 cells
     cell_id: usize,
     ip: usize,
+}
+
+impl BrainfuckVM {
+    pub fn new() -> BrainfuckVM{
+        BrainfuckVM {
+            memory: [0; 1024].into(),
+            cell_id: 0usize,
+            ip: 0usize
+        }
+    }
+}
+
+pub struct BrainfuckInterpreter {
+    vm: BrainfuckVM,
     instructions: Vec<BrainfuckInstruction>,
     brackets_mapping: HashMap<usize, usize>,
 }
@@ -67,9 +81,7 @@ impl BrainfuckInterpreter {
         let instructions = parse(program);
         let brackets_mapping = parse_brackets(&instructions).unwrap();
         BrainfuckInterpreter {
-            memory: [0; 256].into(),
-            cell_id: 0usize,
-            ip: 0usize,
+            vm:BrainfuckVM::new(),
             instructions,
             brackets_mapping,
         }
@@ -129,8 +141,10 @@ impl BrainfuckInterpreter {
 
 #[cfg(test)]
 mod tests {
+    extern crate anyhow;
     use super::*;
     use crate::io::InMemoryIO;
+    use std::panic;
 
     #[test]
     fn test_z_simple() {
@@ -150,5 +164,27 @@ mod tests {
         let mut bf = BrainfuckInterpreter::new(&sample);
         bf.run(&mut io);
         assert_eq!(io.output, vec!['Z']);
+    }
+
+    fn it_does_not_crash_with(sample:&str){
+        let res = panic::catch_unwind(|| {
+            let mut bf = BrainfuckInterpreter::new(&sample);
+            let mut io = InMemoryIO::default();
+            bf.run(&mut io)
+        });
+        // Ensure the BF interpreter does not crash when running the program
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn test_loop_0_to_99() {
+        let sample = include_str!("../samples/0-to-99.bf");
+        it_does_not_crash_with(sample);
+    }
+
+    #[test]
+    fn test_sierpinski() {
+        let sample = include_str!("../samples/sierpinski.bf");
+        it_does_not_crash_with(sample);
     }
 }
