@@ -6,7 +6,7 @@ pub trait BrainfuckIo {
 #[derive(Debug, Default)]
 pub struct InMemoryIO {
     pub output: Vec<char>,
-    inputs: Vec<char>,
+    pub inputs: Vec<char>,
 }
 
 impl InMemoryIO {

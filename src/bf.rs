@@ -161,26 +161,6 @@ mod tests {
     use crate::io::InMemoryIO;
     use std::panic;
 
-    #[test]
-    fn test_z_simple() {
-        // prints "Z" by incrementing 90 times
-        let sample = "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.";
-        let mut io = InMemoryIO::default();
-        let mut bf = BrainfuckInterpreter::new(&sample);
-        bf.run(&mut io);
-        assert_eq!(io.output, vec!['Z']);
-    }
-
-    #[test]
-    fn test_z_with_loop() {
-        // prints "Z" with a loop
-        let sample = "+++++++++[>++++++++++<-]>.";
-        let mut io = InMemoryIO::default();
-        let mut bf = BrainfuckInterpreter::new(&sample);
-        bf.run(&mut io);
-        assert_eq!(io.output, vec!['Z']);
-    }
-
     fn it_does_not_crash_with(sample: &str, inps: Vec<char>) -> InMemoryIO {
         let res: Result<InMemoryIO, _> = panic::catch_unwind(|| {
             let mut io = InMemoryIO::new_with_inputs(inps);
@@ -190,41 +170,67 @@ mod tests {
         });
 
         // Ensure the BF interpreter does not crash when running the program
+        // then return the InMemory
         assert!(res.is_ok());
         res.unwrap()
     }
 
     #[test]
+    fn test_null() {
+        let io = it_does_not_crash_with("", vec![]);
+        assert_eq!(io.output, vec![]);
+    }
+
+    #[test]
+    fn test_z_simple() {
+        // prints "Z" by incrementing 90 times
+        let sample = "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.";
+        let io = it_does_not_crash_with(&sample, vec![]);
+        assert_eq!(io.output, vec!['Z']);
+    }
+
+    #[test]
+    fn test_z_with_loop() {
+        // prints "Z" with a loop
+        let sample = "+++++++++[>++++++++++<-]>.";
+        let io = it_does_not_crash_with(&sample, vec![]);
+        assert_eq!(io.output, vec!['Z']);
+    }
+
+    #[test]
+    fn test_hello_world() {
+        let sample = include_str!("../samples/hello-world.bf");
+        let io = it_does_not_crash_with(sample, vec![]);
+        assert!(io.output.len() > 0);
+    }
+
+    #[test]
     fn test_loop_0_to_99() {
         let sample = include_str!("../samples/0-to-99.bf");
-        it_does_not_crash_with(sample, vec![]);
+        let io = it_does_not_crash_with(sample, vec![]);
+        assert!(io.output.len() > 0);
     }
 
     #[test]
     fn test_sample_brainfuck() {
         let sample = include_str!("../samples/brainfuck.bf");
-        it_does_not_crash_with(sample, vec![]);
+        let io = it_does_not_crash_with(sample, vec![]);
+        assert_eq!(io.output, "brainfuck\n".chars().collect::<Vec<_>>());
     }
 
     #[test]
     fn test_has_enough_memory() {
         // The VM should have at least 30k cells
         let sample = "++++[>++++++<-]>[>+++++>+++++++<<-]>>++++<[[>[[>>+<<-]<]>>>-]>-[>+>+<<-]>]+++++[>+++++++<<++>-]>.<<.";
-        let mut io = InMemoryIO::default();
-        let mut bf = BrainfuckInterpreter::new(&sample);
-        bf.run(&mut io);
+        let io = it_does_not_crash_with(sample, vec![]);
         assert_eq!(io.output, vec!['#', '\n']);
     }
 
     #[test]
     fn test_decrease() {
-        let sample = ",[-]";
-        let res = panic::catch_unwind(|| {
-            let mut io = InMemoryIO::new_with_inputs(vec![4.into()]);
-            let mut bf = BrainfuckInterpreter::new(&sample);
-            bf.run(&mut io);
-        });
-        assert!(res.is_ok());
+        let io = it_does_not_crash_with(",[-]", vec![4.into()]);
+        assert_eq!(io.output, vec![]);
+        assert_eq!(io.inputs, vec![]);
     }
 
     #[test]
@@ -240,5 +246,27 @@ mod tests {
 
         let io = it_does_not_crash_with(sample, vec![]);
         assert_eq!(io.output, vec!['H', '\n']);
+    }
+
+    #[test]
+    fn test_rot13() {
+        let sample = include_str!("../samples/rot13.b");
+        let inps = "~mlk zyx";
+        let io = it_does_not_crash_with(sample, inps.chars().collect::<Vec<_>>());
+        assert_eq!(io.output, "~zyx mlk".chars().collect::<Vec<_>>());
+    }
+
+    #[ignore]
+    #[test]
+    fn test_parsing_error() {
+        // missing closing ]
+        let sample = "+++++[>+++++++>++<<-]>.>.[";
+        let res = panic::catch_unwind(|| {
+            let mut io = InMemoryIO::default();
+            let mut bf = BrainfuckInterpreter::new(&sample);
+            bf.run(&mut io);
+        });
+        // cannot be parsed
+        assert!(res.is_err());
     }
 }
