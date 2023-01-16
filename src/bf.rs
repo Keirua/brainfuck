@@ -12,7 +12,7 @@ enum BrainfuckInstruction {
     JnzBack,
 }
 
-fn parse_brackets(program: &Vec<BrainfuckInstruction>) -> Option<HashMap<usize, usize>> {
+fn parse_brackets(program: &[BrainfuckInstruction]) -> Option<HashMap<usize, usize>> {
     let mut brackets_mapping: HashMap<usize, usize> = HashMap::new();
     let mut par_stack: Vec<usize> = Vec::new();
     for (pos, c) in program.iter().enumerate() {
@@ -54,59 +54,75 @@ fn parse(program: &str) -> Vec<BrainfuckInstruction> {
     out
 }
 
-pub fn run_program(program: &str, io: &mut impl BrainfuckIo) {
-    let instructions = parse(program);
-    let mut memory = [0u8; 256]; // hardcoded 256 cells
-    let mut cell_id: usize = 0;
-    let mut ip = 0usize;
-    let brackets_mapping = parse_brackets(&instructions).unwrap();
-    println!("{:?}", brackets_mapping);
-    loop {
-        if ip < instructions.len() {
-            match instructions[ip] {
-                BrainfuckInstruction::IncrValue => {
-                    // + Increment the value of the cell by 1
-                    memory[cell_id] += 1;
-                }
-                BrainfuckInstruction::DecrValue => {
-                    // - Decrement the value of the cell by 1
-                    memory[cell_id] -= 1;
-                }
-                BrainfuckInstruction::IncrPointer => {
-                    // > Move the pointer to the next cell to the right
-                    cell_id += 1;
-                }
-                BrainfuckInstruction::DecrPointer => {
-                    // < Move the pointer to the next cell to the left
-                    cell_id -= 1;
-                }
-                BrainfuckInstruction::OutputChar => {
-                    // . Output the ASCII character corresponding to the value of the current cell
-                    let v: char = memory[cell_id] as char;
-                    io.output_char(&v);
-                }
-                BrainfuckInstruction::InputChar => {
-                    // , Input a character and store its ASCII value in the current cell
-                    unimplemented!(
-                        ", Input a character and store its ASCII value in the current cell"
-                    );
-                }
-                BrainfuckInstruction::JzFront => {
-                    // [ If the value of the cell is zero, jump to the corresponding ] character
-                    if memory[cell_id] == 0 {
-                        ip = *brackets_mapping.get(&ip).unwrap();
+pub struct BrainfuckInterpreter {
+    memory: Vec<u8>, // hardcoded 256 cells
+    cell_id: usize,
+    ip: usize,
+    instructions: Vec<BrainfuckInstruction>,
+    brackets_mapping: HashMap<usize, usize>,
+}
+
+impl BrainfuckInterpreter {
+    pub fn new(program: &str) -> BrainfuckInterpreter {
+        let instructions = parse(program);
+        let brackets_mapping = parse_brackets(&instructions).unwrap();
+        BrainfuckInterpreter {
+            memory: [0; 256].into(),
+            cell_id: 0usize,
+            ip: 0usize,
+            instructions,
+            brackets_mapping,
+        }
+    }
+
+    pub fn run(&mut self, io: &mut impl BrainfuckIo) {
+        loop {
+            if self.ip < self.instructions.len() {
+                match self.instructions[self.ip] {
+                    BrainfuckInstruction::IncrValue => {
+                        // + Increment the value of the cell by 1
+                        self.memory[self.cell_id] += 1;
+                    }
+                    BrainfuckInstruction::DecrValue => {
+                        // - Decrement the value of the cell by 1
+                        self.memory[self.cell_id] -= 1;
+                    }
+                    BrainfuckInstruction::IncrPointer => {
+                        // > Move the pointer to the next cell to the right
+                        self.cell_id += 1;
+                    }
+                    BrainfuckInstruction::DecrPointer => {
+                        // < Move the pointer to the next cell to the left
+                        self.cell_id -= 1;
+                    }
+                    BrainfuckInstruction::OutputChar => {
+                        // . Output the ASCII character corresponding to the value of the current cell
+                        let v: char = self.memory[self.cell_id] as char;
+                        io.output_char(&v);
+                    }
+                    BrainfuckInstruction::InputChar => {
+                        // , Input a character and store its ASCII value in the current cell
+                        unimplemented!(
+                            ", Input a character and store its ASCII value in the current cell"
+                        );
+                    }
+                    BrainfuckInstruction::JzFront => {
+                        // [ If the value of the cell is zero, jump to the corresponding ] character
+                        if self.memory[self.cell_id] == 0 {
+                            self.ip = *self.brackets_mapping.get(&self.ip).unwrap();
+                        }
+                    }
+                    BrainfuckInstruction::JnzBack => {
+                        // ] if the value of the current cell is non-zero, jump back to the corresponding [
+                        if self.memory[self.cell_id] != 0 {
+                            self.ip = *self.brackets_mapping.get(&self.ip).unwrap();
+                        }
                     }
                 }
-                BrainfuckInstruction::JnzBack => {
-                    // ] if the value of the current cell is non-zero, jump back to the corresponding [
-                    if memory[cell_id] != 0 {
-                        ip = *brackets_mapping.get(&ip).unwrap();
-                    }
-                }
+                self.ip += 1;
+            } else {
+                break;
             }
-            ip += 1;
-        } else {
-            break;
         }
     }
 }
@@ -121,7 +137,8 @@ mod tests {
         // prints "Z" by incrementing 90 times
         let sample = "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.";
         let mut io = InMemoryIO::default();
-        run_program(&sample, &mut io);
+        let mut bf = BrainfuckInterpreter::new(&sample);
+        bf.run(&mut io);
         assert_eq!(io.output, vec!['Z']);
     }
 
@@ -130,7 +147,8 @@ mod tests {
         // prints "Z" with a loop
         let sample = "+++++++++[>++++++++++<-]>.";
         let mut io = InMemoryIO::default();
-        run_program(&sample, &mut io);
+        let mut bf = BrainfuckInterpreter::new(&sample);
+        bf.run(&mut io);
         assert_eq!(io.output, vec!['Z']);
     }
 }
