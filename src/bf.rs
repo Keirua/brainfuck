@@ -1,6 +1,7 @@
 use crate::io::BrainfuckIo;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 enum BrainfuckInstruction {
     IncrValue,
     DecrValue,
@@ -67,6 +68,12 @@ impl BrainfuckVM {
             cell_id: 0usize,
             ip: 0usize,
         }
+    }
+}
+
+impl Default for BrainfuckVM {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -174,26 +181,29 @@ mod tests {
         assert_eq!(io.output, vec!['Z']);
     }
 
-    fn it_does_not_crash_with(sample: &str) {
-        let res = panic::catch_unwind(|| {
+    fn it_does_not_crash_with(sample: &str, inps: Vec<char>) -> InMemoryIO {
+        let res: Result<InMemoryIO, _> = panic::catch_unwind(|| {
+            let mut io = InMemoryIO::new_with_inputs(inps);
             let mut bf = BrainfuckInterpreter::new(&sample);
-            let mut io = InMemoryIO::default();
-            bf.run(&mut io)
+            bf.run(&mut io);
+            io
         });
+
         // Ensure the BF interpreter does not crash when running the program
         assert!(res.is_ok());
+        res.unwrap()
     }
 
     #[test]
     fn test_loop_0_to_99() {
         let sample = include_str!("../samples/0-to-99.bf");
-        it_does_not_crash_with(sample);
+        it_does_not_crash_with(sample, vec![]);
     }
 
     #[test]
     fn test_sample_brainfuck() {
         let sample = include_str!("../samples/brainfuck.bf");
-        it_does_not_crash_with(sample);
+        it_does_not_crash_with(sample, vec![]);
     }
 
     #[test]
@@ -220,6 +230,15 @@ mod tests {
     #[test]
     fn test_sierpinski() {
         let sample = include_str!("../samples/sierpinski.bf");
-        it_does_not_crash_with(sample);
+        it_does_not_crash_with(sample, vec![]);
+    }
+
+    #[test]
+    fn test_obscure() {
+        let sample =
+            "[]++++++++++[>>+>+>++++++[<<+<+++>>>-]<<<<-]\"A*$\";?@![#>>+<<]>[>>]<<<<[>++<[-]]>.>.";
+
+        let io = it_does_not_crash_with(sample, vec![]);
+        assert_eq!(io.output, vec!['H', '\n']);
     }
 }
