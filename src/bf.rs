@@ -61,11 +61,11 @@ pub struct BrainfuckVM {
 }
 
 impl BrainfuckVM {
-    pub fn new() -> BrainfuckVM{
+    pub fn new() -> BrainfuckVM {
         BrainfuckVM {
             memory: [0; 30_000].into(),
             cell_id: 0usize,
-            ip: 0usize
+            ip: 0usize,
         }
     }
 }
@@ -81,7 +81,7 @@ impl BrainfuckInterpreter {
         let instructions = parse(program);
         let brackets_mapping = parse_brackets(&instructions).unwrap();
         BrainfuckInterpreter {
-            vm:BrainfuckVM::new(),
+            vm: BrainfuckVM::new(),
             instructions,
             brackets_mapping,
         }
@@ -164,7 +164,7 @@ mod tests {
         assert_eq!(io.output, vec!['Z']);
     }
 
-    fn it_does_not_crash_with(sample:&str){
+    fn it_does_not_crash_with(sample: &str) {
         let res = panic::catch_unwind(|| {
             let mut bf = BrainfuckInterpreter::new(&sample);
             let mut io = InMemoryIO::default();
@@ -187,7 +187,7 @@ mod tests {
     }
 
     #[test]
-    fn test_has_enough_memory(){
+    fn test_has_enough_memory() {
         // The VM should have at least 30k cells
         let sample = "++++[>++++++<-]>[>+++++>+++++++<<-]>>++++<[[>[[>>+<<-]<]>>>-]>-[>+>+<<-]>]+++++[>+++++++<<++>-]>.<<.";
         let mut io = InMemoryIO::default();
@@ -197,8 +197,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decrease(){
-
+    fn test_decrease() {
         let sample = ",[-]";
         let res = panic::catch_unwind(|| {
             let mut io = InMemoryIO::new_with_inputs(vec![4.into()]);

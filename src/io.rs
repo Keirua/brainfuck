@@ -10,10 +10,10 @@ pub struct InMemoryIO {
 }
 
 impl InMemoryIO {
-    pub fn new_with_inputs(inputs: Vec<char>) -> InMemoryIO{
-        InMemoryIO{
+    pub fn new_with_inputs(inputs: Vec<char>) -> InMemoryIO {
+        InMemoryIO {
             output: Vec::new(),
-            inputs
+            inputs,
         }
     }
 }
