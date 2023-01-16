@@ -248,10 +248,19 @@ mod tests {
         assert_eq!(io.output, vec!['H', '\n']);
     }
 
+    #[ignore]
+    #[test]
+    fn test_collatz() {
+        let sample = include_str!("../samples/collatz.b");
+        let io = it_does_not_crash_with(sample, vec!['1', '4', 10 as char]);
+        assert!(io.output.len() > 0);
+    }
+
+    #[ignore]
     #[test]
     fn test_rot13() {
         let sample = include_str!("../samples/rot13.b");
-        let inps = "~mlk zyx";
+        let inps = "~mlk zyx\0";
         let io = it_does_not_crash_with(sample, inps.chars().collect::<Vec<_>>());
         assert_eq!(io.output, "~zyx mlk".chars().collect::<Vec<_>>());
     }
@@ -268,5 +277,13 @@ mod tests {
         });
         // cannot be parsed
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_gen_bf() {
+        let sample = "+++++[>+++++++++<-],[[>--.++>+<<-]>+.->[<.>-]<<,]";
+        let inps = "SOME MORE BLOODY STUPID TESTING!\0";
+        let io = it_does_not_crash_with(sample, inps.chars().collect::<Vec<_>>());
+        assert!(io.output.len() > 0);
     }
 }
