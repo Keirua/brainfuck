@@ -93,11 +93,21 @@ impl BrainfuckInterpreter {
                 match self.instructions[self.vm.ip] {
                     BrainfuckInstruction::IncrValue => {
                         // + Increment the value of the cell by 1
-                        self.vm.memory[self.vm.cell_id] += 1;
+                        // (wraps around at 255)
+                        if self.vm.memory[self.vm.cell_id] == 255 {
+                            self.vm.memory[self.vm.cell_id] = 0;
+                        } else {
+                            self.vm.memory[self.vm.cell_id] += 1;
+                        };
                     }
                     BrainfuckInstruction::DecrValue => {
                         // - Decrement the value of the cell by 1
-                        self.vm.memory[self.vm.cell_id] -= 1;
+                        // self.vm.memory[self.vm.cell_id] -= 1;
+                        if self.vm.memory[self.vm.cell_id] == 0 {
+                            self.vm.memory[self.vm.cell_id] = 255;
+                        } else {
+                            self.vm.memory[self.vm.cell_id] -= 1;
+                        };
                     }
                     BrainfuckInstruction::IncrPointer => {
                         // > Move the pointer to the next cell to the right
@@ -207,7 +217,6 @@ mod tests {
         assert!(res.is_ok());
     }
 
-    #[ignore]
     #[test]
     fn test_sierpinski() {
         let sample = include_str!("../samples/sierpinski.bf");
