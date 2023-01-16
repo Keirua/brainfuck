@@ -1,5 +1,5 @@
-use bf::run_program;
-use bf::StdIO;
+use bf::bf::run_program;
+use bf::io::StdIO;
 
 fn main() {
     // let sample = "+++++++++[>++++++++++<-]>.";
