@@ -159,6 +159,7 @@ impl BrainfuckInterpreter {
 mod tests {
     use super::*;
     use crate::io::InMemoryIO;
+    use quickcheck::Gen;
     use std::panic;
 
     fn it_does_not_crash_with(sample: &str, inps: Vec<char>) -> InMemoryIO {
@@ -177,8 +178,8 @@ mod tests {
 
     #[test]
     fn test_null() {
-        let io = it_does_not_crash_with("", vec![]);
-        assert_eq!(io.output, vec![]);
+        let io = it_does_not_crash_with("", Vec::<char>::new());
+        assert_eq!(io.output, Vec::<char>::new());
     }
 
     #[test]
@@ -229,8 +230,25 @@ mod tests {
     #[test]
     fn test_decrease() {
         let io = it_does_not_crash_with(",[-]", vec![4.into()]);
-        assert_eq!(io.output, vec![]);
-        assert_eq!(io.inputs, vec![]);
+        assert_eq!(io.output, Vec::<char>::new());
+        assert_eq!(io.inputs, Vec::<char>::new());
+    }
+
+    #[derive(Debug, Clone)]
+    struct ValidDecreaseInputFixture(pub Vec<char>);
+
+    impl quickcheck::Arbitrary for ValidDecreaseInputFixture {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            // let inputs = SafeEmail().fake_with_rng(g);
+            let inputs = vec![4.into()];
+            Self(inputs)
+        }
+    }
+
+    #[quickcheck]
+    fn test_decrease_qc(inputs: ValidDecreaseInputFixture) -> bool {
+        let io = it_does_not_crash_with(",[-]", inputs.0);
+        io.output == Vec::<char>::new() && io.inputs == Vec::<char>::new()
     }
 
     #[test]

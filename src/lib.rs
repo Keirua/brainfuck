@@ -9,5 +9,11 @@
 // [ If the value of the cell is zero, jump to the corresponding ] character
 // ] if the value of the current cell is non-zero, jump back to the corresponding [
 
+#[cfg(test)]
+extern crate quickcheck;
+#[cfg(test)]
+#[macro_use(quickcheck)]
+extern crate quickcheck_macros;
+
 pub mod bf;
 pub mod io;
