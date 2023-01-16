@@ -89,27 +89,27 @@ impl BrainfuckInterpreter {
 
     pub fn run(&mut self, io: &mut impl BrainfuckIo) {
         loop {
-            if self.ip < self.instructions.len() {
-                match self.instructions[self.ip] {
+            if self.vm.ip < self.instructions.len() {
+                match self.instructions[self.vm.ip] {
                     BrainfuckInstruction::IncrValue => {
                         // + Increment the value of the cell by 1
-                        self.memory[self.cell_id] += 1;
+                        self.vm.memory[self.vm.cell_id] += 1;
                     }
                     BrainfuckInstruction::DecrValue => {
                         // - Decrement the value of the cell by 1
-                        self.memory[self.cell_id] -= 1;
+                        self.vm.memory[self.vm.cell_id] -= 1;
                     }
                     BrainfuckInstruction::IncrPointer => {
                         // > Move the pointer to the next cell to the right
-                        self.cell_id += 1;
+                        self.vm.cell_id += 1;
                     }
                     BrainfuckInstruction::DecrPointer => {
                         // < Move the pointer to the next cell to the left
-                        self.cell_id -= 1;
+                        self.vm.cell_id -= 1;
                     }
                     BrainfuckInstruction::OutputChar => {
                         // . Output the ASCII character corresponding to the value of the current cell
-                        let v: char = self.memory[self.cell_id] as char;
+                        let v: char = self.vm.memory[self.vm.cell_id] as char;
                         io.output_char(&v);
                     }
                     BrainfuckInstruction::InputChar => {
@@ -120,18 +120,18 @@ impl BrainfuckInterpreter {
                     }
                     BrainfuckInstruction::JzFront => {
                         // [ If the value of the cell is zero, jump to the corresponding ] character
-                        if self.memory[self.cell_id] == 0 {
-                            self.ip = *self.brackets_mapping.get(&self.ip).unwrap();
+                        if self.vm.memory[self.vm.cell_id] == 0 {
+                            self.vm.ip = *self.brackets_mapping.get(&self.vm.ip).unwrap();
                         }
                     }
                     BrainfuckInstruction::JnzBack => {
                         // ] if the value of the current cell is non-zero, jump back to the corresponding [
-                        if self.memory[self.cell_id] != 0 {
-                            self.ip = *self.brackets_mapping.get(&self.ip).unwrap();
+                        if self.vm.memory[self.vm.cell_id] != 0 {
+                            self.vm.ip = *self.brackets_mapping.get(&self.vm.ip).unwrap();
                         }
                     }
                 }
-                self.ip += 1;
+                self.vm.ip += 1;
             } else {
                 break;
             }
@@ -183,8 +183,14 @@ mod tests {
     }
 
     #[test]
-    fn test_sierpinski() {
-        let sample = include_str!("../samples/sierpinski.bf");
+    fn test_sample_brainfuck() {
+        let sample = include_str!("../samples/brainfuck.bf");
         it_does_not_crash_with(sample);
     }
+
+    // #[test]
+    // fn test_sierpinski() {
+    //     let sample = include_str!("../samples/sierpinski.bf");
+    //     it_does_not_crash_with(sample);
+    // }
 }
